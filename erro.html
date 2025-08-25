@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocorreu um Erro</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="imagens/favicon-16x16.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            background: linear-gradient(135deg, #0a0a0a, #ff004c); /* Cor diferente para erro */
+            flex-direction: column;
+        }
+
+        .container {
+            padding: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #ff004c;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .back-button {
+            display: inline-block;
+            background-color: #ff004c;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #cc003d;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Ocorreu um Erro!</h1>
+        <p>Não foi possível enviar sua mensagem. Por favor, tente novamente mais tarde ou entre em contato diretamente pelo e-mail ou redes sociais.</p>
+        <a href="index.html" class="back-button">Voltar para a página inicial</a>
+    </div>
+</body>
+</html>

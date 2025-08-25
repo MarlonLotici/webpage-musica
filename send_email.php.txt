@@ -1,0 +1,22 @@
+<?php
+date_default_timezone_set('America/Sao_Paulo');
+$to = 'marlonlotici6@gmail.com'; // Mude esta linha para o seu e-mail
+$subject = 'Nova Mensagem do Formulário de Contato';
+$name = htmlspecialchars($_POST['nome']);
+$email = htmlspecialchars($_POST['email']);
+$message = htmlspecialchars($_POST['mensagem']);
+$body = "Nova mensagem recebida de Marlon Lotici:\n\n";
+$body .= "Nome: " . $name . "\n";
+$body .= "E-mail: " . $email . "\n";
+$body .= "Mensagem:\n" . $message . "\n";
+$headers = "From: " . $name . " <" . $email . ">\r\n";
+$headers .= "Reply-To: " . $email . "\r\n";
+$headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+if (mail($to, $subject, $body, $headers)) {
+    header('Location: sucesso.html'); 
+    exit;
+} else {
+    header('Location: erro.html');
+    exit;
+}
+?>

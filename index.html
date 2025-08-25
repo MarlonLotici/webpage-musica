@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marlon Lotici - Portfólio Música</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="imagens/favicon-16x16.ico" type="image/x-icon">
+    
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <img src="imagens/logo principal2.png" alt="logo Marlon">
+        </div>
+        
+        <button class="menu-toggle" aria-label="Abrir menu de navegação">
+            <span class="material-icons">menu</span>
+        </button>
+
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#home">Início</a></li>
+                <li><a href="#repertorio">Repertório</a></li>
+                <li><a href="#agenda">Agenda</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#contato">Contato</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home"> 
+        <div class="texto-home">
+            <h1>Música ao vivo com Energia de Pista e Alma Brasileira</h1>
+            <p>O som é liberdade, a vibe é única. Sinta a música vibrar através de você! Bem-vindo ao meu espetáculo!</p>
+        </div>
+    </section>
+
+    <section id="repertorio" class="alternating-color">
+        <div class="repertorio-header">
+            <h2>Repertório</h2>
+            <p>Clássicos da MPB, Rock, Reggae e mais, com o frescor e o balanço da praia.</p>
+        </div>
+        <div class="repertorio-content">
+            <div class="repertorio-col">
+                <img src="imagens/ponte hercilio.jpg" alt="Ponte Hercílio Luz" class="repertorio-image">
+            </div>
+            <div class="repertorio-col repertorio-list-col">
+                <ul class="repertorio-list">
+                    <li><span class="music-icon">🎵</span> Música 1 - Artista 1</li>
+                    <li><span class="music-icon">🎵</span> Música 2 - Artista 2</li>
+                    <li><span class="music-icon">🎵</span> Música 3 - Artista 3</li>
+                    <li><span class="music-icon">🎵</span> Música 4 - Artista 4</li>
+                    <li><span class="music-icon">🎵</span> Música 5 - Artista 5</li>
+                    <li><span class="music-icon">🎵</span> Música 6 - Artista 6</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="agenda" class="alternating-color">
+        <h2>Agenda de Shows</h2>
+        <p>Veja onde estarei tocando nas próximas semanas.</p>
+        <div class="agenda-table-container">
+            <table class="agenda-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Local</th>
+                        <th>Horário</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>15 de Julho</td>
+                        <td>Bar do Zé - Centro</td>
+                        <td>21:00</td>
+                    </tr>
+                    <tr>
+                        <td>22 de Julho</td>
+                        <td>Beach Club - Jurerê</td>
+                        <td>22:30</td>
+                    </tr>
+                    <tr>
+                        <td>29 de Julho</td>
+                        <td>Pub da Ilha - Lagoa</td>
+                        <td>20:00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="sobre" class="alternating-color">
+        <h2>Sobre o Artista</h2>
+        <p>Marlon Lotici começou a tocar violão aos 11 anos e nunca mais parou. Com shows em casas famosas de Floripa, ele mistura MPB, pop, reggae e rock com uma vibe descontraída e cheia de energia.</p>
+        <p>Cada apresentação é uma conexão direta com o público, música de verdade trazendo o frescor da praia e transforma cada acorde em momentos pra lembrar.</p>
+    </section>
+
+    <section id="contato" class="alternating-color">
+        <h2>Contato</h2>
+        <p>Entre em contato para shows, eventos ou parcerias.</p>
+        <form action="https://formspree.io/f/mnnbqqye" method="post">      
+               <input type="text" name="nome" placeholder="Seu nome" required>
+            <input type="email" name="email" placeholder="Seu e-mail" required>
+            <textarea name="mensagem" placeholder="Sua mensagem" required></textarea>
+            <button type="submit" class="contact-button">Enviar</button>
+        </form>
+        <div class="social-icons">
+    <a href="https://www.youtube.com/@MarlonLotici" target="_blank" rel="noopener">
+    <img src="imagens/youtube_activity_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg" alt="Logo do YouTube" class="social-icon">
+</a>
+</div>
+    </section>
+
+    <script src="https://unpkg.com/scrollreveal"></script>
+    <script>
+        // Animação de rolagem para as seções
+        ScrollReveal().reveal('section', {
+            origin: 'bottom',
+            distance: '30px',
+            duration: 800,
+            easing: 'ease-out',
+            interval: 200,
+            reset: false
+        });
+
+        // Lógica do menu hambúrguer para celular
+        const menuToggle = document.querySelector('.menu-toggle');
+        const mainNav = document.querySelector('.main-nav');
+
+        menuToggle.addEventListener('click', () => {
+            mainNav.classList.toggle('nav-active');
+        });
+    </script>
+</body>
+</html>
