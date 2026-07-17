@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensagem enviada — Marlon Lotici</title>
+    <link rel="icon" href="imagens/favicon-16x16.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .status-card {
+            position: relative;
+            text-align: center;
+            max-width: 560px;
+            z-index: 1;
+        }
+        .status-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: hsl(var(--hue), 90%, 55%);
+            color: var(--bg);
+            margin-bottom: 32px;
+            font-size: 2.2rem;
+            font-family: var(--font-display);
+            font-weight: 700;
+            box-shadow:
+                0 0 30px hsla(var(--hue), 90%, 55%, 0.5),
+                0 0 60px hsla(var(--hue), 90%, 55%, 0.3);
+        }
+        .status-eyebrow {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: hsl(var(--hue), 90%, 65%);
+            margin-bottom: 16px;
+        }
+        .status-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 500;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            color: var(--ink);
+            margin-bottom: 24px;
+        }
+        .status-title em {
+            font-style: italic;
+            background: linear-gradient(
+                90deg,
+                hsl(var(--hue), 90%, 65%),
+                hsl(calc(var(--hue) + 60), 90%, 65%)
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 25px hsla(var(--hue), 90%, 55%, 0.3));
+        }
+        .status-text {
+            font-size: 1.05rem;
+            color: var(--ink-soft);
+            line-height: 1.65;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    <div class="status-card">
+        <div class="status-mark">✓</div>
+        <span class="status-eyebrow">— Recebido</span>
+        <h1 class="status-title">Mensagem <em>enviada.</em></h1>
+        <p class="status-text">
+            Valeu pelo contato! Vou responder o mais rápido possível —
+            geralmente em até 24h. Enquanto isso, dá uma passada nos vídeos.
+        </p>
+        <a href="index.html" class="btn btn-primary">
+            ← Voltar para o início
+        </a>
+    </div>
+</body>
+</html>
