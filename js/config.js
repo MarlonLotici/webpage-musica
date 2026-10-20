@@ -24,4 +24,4 @@ export const PIX_SUGGESTED = [10, 20, 50];
 export const VOTES_BACKEND = "local";
 
 // Vídeo de fundo do hero B2B (mp4 vertical/horizontal curto, sem som). "" = fundo gradiente.
-export const HERO_VIDEO = "";
+export const HERO_VIDEO = "videos/hero.mp4";

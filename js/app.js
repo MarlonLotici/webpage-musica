@@ -152,10 +152,12 @@ function b2bView() {
   const video = (v) => `<div class="shrink-0 w-48 snap-center"><div class="aspect-[9/16] rounded-2xl overflow-hidden card flex items-center justify-center">${v.embed ? `<iframe src="${esc(v.embed)}" class="w-full h-full" loading="lazy" allowfullscreen title="${esc(v.title)}"></iframe>` : '<i data-lucide="play-circle" class="w-10 h-10 text-gray-700"></i>'}</div><div class="text-xs text-center mt-2 text-gray-500">${esc(v.title)}</div></div>`;
   const tag = (t) => `<span class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-gray-400">${t}</span>`;
   return `<main>
-    <section class="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden">
-      ${C.HERO_VIDEO ? `<video class="absolute inset-0 w-full h-full object-cover opacity-50" src="${esc(C.HERO_VIDEO)}" autoplay loop muted playsinline></video>` : `<div class="absolute inset-0 bg-[radial-gradient(60%_50%_at_70%_20%,rgba(251,191,36,.12),transparent),radial-gradient(50%_40%_at_10%_60%,rgba(255,255,255,.05),transparent)]"></div>`}
-      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-      <div class="relative max-w-5xl mx-auto px-4 pb-16 pt-24 w-full">
+    <section class="relative min-h-[calc(100vh-4rem)] flex items-end md:items-center overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(60%_50%_at_70%_20%,rgba(251,191,36,.12),transparent),radial-gradient(50%_40%_at_10%_60%,rgba(255,255,255,.05),transparent)]"></div>
+      ${C.HERO_VIDEO ? `<div class="absolute inset-0 md:hidden"><video class="w-full h-full object-cover opacity-50" src="${esc(C.HERO_VIDEO)}" autoplay loop muted playsinline></video></div>` : ""}
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent md:hidden"></div>
+      <div class="relative max-w-5xl mx-auto px-4 pb-16 pt-24 w-full grid md:grid-cols-[1fr_auto] gap-12 items-center">
+        <div>
         <span class="rise inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-amber-400 border border-amber-400/20 bg-amber-400/5 rounded-full px-3 py-1">LIVE LOOP EXPERIENCE · FLORIANÓPOLIS</span>
         <h1 class="rise mt-6 text-5xl md:text-7xl font-extrabold tracking-tighter text-white leading-[1.02]" ${delay(1)}>A pressão de uma banda.<br><span class="text-gray-500">A logística de um artista solo.</span></h1>
         <p class="rise mt-6 max-w-xl text-lg text-gray-400" ${delay(2)}>Bateria em beatbox, contrabaixo no violão, harmonias vocais e solos construídos 100% ao vivo na Boss RC-50. Do som elegante de recepção à pista de dança cheia.</p>
@@ -163,6 +165,8 @@ function b2bView() {
           <a href="#orcamento" class="tap inline-flex items-center gap-2 px-6 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-bold">Solicitar proposta <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
           <a href="#formatos" class="tap inline-flex items-center px-6 rounded-full border border-white/15 text-white hover:border-white/30">Ver formatos</a>
         </div>
+        </div>
+        ${C.HERO_VIDEO ? `<div class="rise hidden md:block w-[290px] aspect-[9/16] max-h-[72vh] rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-amber-400/10" ${delay(2)}><video class="w-full h-full object-cover" src="${esc(C.HERO_VIDEO)}" autoplay loop muted playsinline></video></div>` : ""}
       </div>
     </section>
 
