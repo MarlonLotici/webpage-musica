@@ -2,8 +2,8 @@
 // CONFIGURAÇÃO — edite só este arquivo
 // ============================================================
 
-export const WHATSAPP_NUMBER = "5548999999999"; // DDI+DDD+número, só dígitos (TROCAR)
-export const PIX_KEY = "seu-pix@email.com";      // chave Pix (TROCAR)
+export const WHATSAPP_NUMBER = "5546999201690"; // DDI+DDD+número, só dígitos
+export const PIX_KEY = "marlonlotici6@gmail.com";
 export const PIX_NAME = "Marlon Lotici";
 export const STAGE_PIN = "1997";
 
