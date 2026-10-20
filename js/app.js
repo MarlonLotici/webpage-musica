@@ -1,6 +1,6 @@
 import * as C from "./config.js";
 import { BLOCKS, PHASES, TAG_BADGES } from "./repertoireData.js";
-import { getVotes, vote, myVotes, subscribe } from "./votesService.js";
+import { getVotes, vote, myVote, subscribe } from "./votesService.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -58,7 +58,7 @@ function showHero() {
 
 function blockCard(b, i) {
   const v = state.votes[b.id] || 0;
-  const mine = myVotes()[b.id] || 0;
+  const mine = myVote() === b.id;
   const q = norm(state.query.trim());
   const top = Math.max(0, ...Object.values(state.votes));
   const leading = v > 0 && v === top;
@@ -74,8 +74,8 @@ function blockCard(b, i) {
         }).join("")}
       </ul>
       <div class="mt-5 flex items-center justify-between">
-        <div class="text-sm"><span class="text-white font-bold tabular-nums">${v}</span> <span class="text-gray-500">voto${v === 1 ? "" : "s"}${mine ? ` · você ${mine}` : ""}</span></div>
-        <button data-act="vote" data-id="${b.id}" aria-label="Votar no bloco ${b.id}" class="tap w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center shadow-lg shadow-emerald-500/20"><i data-lucide="play" class="w-5 h-5 fill-current"></i></button>
+        <div class="text-sm"><span class="text-white font-bold tabular-nums">${v}</span> <span class="text-gray-500">voto${v === 1 ? "" : "s"}${mine ? " · seu voto" : ""}</span></div>
+        <button data-act="vote" data-id="${b.id}" aria-label="${mine ? "Seu voto está neste bloco" : "Votar no bloco " + b.id}" class="tap w-12 h-12 rounded-full flex items-center justify-center ${mine ? "bg-white text-black" : "bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20"}"><i data-lucide="${mine ? "check" : "play"}" class="w-5 h-5 ${mine ? "" : "fill-current"}"></i></button>
       </div>
     </div>
   </article>`;
@@ -322,10 +322,11 @@ document.addEventListener("click", async (e) => {
   switch (t.dataset.act) {
     case "vote": {
       document.body.classList.add("settled");
-      state.votes = await vote(+t.dataset.id);
+      const res = await vote(+t.dataset.id);
+      state.votes = res.votes;
       $("#blocks").innerHTML = blocksList(); icons();
       if (navigator.vibrate) navigator.vibrate(30);
-      toast("Voto registrado 🔥"); break;
+      toast(!res.changed ? "Você já votou neste bloco ✅" : res.moved ? "Voto movido pra este bloco 🔁" : "Voto registrado 🔥"); break;
     }
     case "modal": openModal(); break;
     case "close": closeModal(); break;
