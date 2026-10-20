@@ -7,100 +7,103 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const waLink = (text) => `https://wa.me/${C.WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 const icons = () => window.lucide && window.lucide.createIcons();
+const delay = (i) => `style="animation-delay:${Math.min(i, 12) * 60}ms"`;
 
 const state = {
   mode: location.hash === "#stage" ? "stage" : "show",
   query: "",
   votes: {},
   stageBlock: 1,
-  stageSong: null, // índice da música aberta em tela cheia
+  stageSong: null,
   timer: { running: false, elapsed: 0, target: 60, last: 0, id: null },
 };
 
 /* ---------- Header / Footer ---------- */
 function header() {
+  const b2b = state.mode === "b2b";
   const tab = (m, label) =>
-    `<button data-mode="${m}" class="tap flex-1 px-3 rounded-full text-sm font-semibold ${state.mode === m ? "bg-amber text-black" : "text-gray-300"}">${label}</button>`;
+    `<button data-mode="${m}" role="tab" aria-selected="${state.mode === m}" class="tap relative z-10 flex-1 px-4 text-[13px] font-semibold rounded-full ${state.mode === m ? "text-black" : "text-gray-400 hover:text-white"}">${label}</button>`;
   return `
-  <header class="sticky top-0 z-40 backdrop-blur-md bg-[#0B0F19]/85 border-b border-white/10 pt-[env(safe-area-inset-top)]">
-    <div class="max-w-3xl mx-auto px-4 py-3">
-      <div class="flex items-center justify-between gap-2">
-        <div>
-          <h1 class="text-xl font-extrabold tracking-wide">MARLON LOTICI</h1>
-          <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-300 bg-red-500/15 border border-red-500/30 rounded-full px-2 py-0.5"><span class="live-dot">🔴</span> LIVE LOOP EXPERIENCE</span>
-        </div>
-        <a href="${C.INSTAGRAM_URL}" target="_blank" rel="noopener" class="tap inline-flex items-center gap-1.5 px-3 rounded-full glass text-sm"><i data-lucide="instagram" class="w-4 h-4"></i>${C.INSTAGRAM_HANDLE}</a>
-      </div>
-      <p class="text-xs text-gray-400 mt-1 italic">O impacto de uma banda completa. A versatilidade de um artista solo.</p>
-      <nav class="mt-3 flex gap-1 p-1 rounded-full glass" aria-label="Modos">
-        ${tab("show", "🎤 Ao Vivo no Show")}${tab("b2b", "🤝 Contrate p/ Eventos")}
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-black/50 border-b border-white/5 pt-[env(safe-area-inset-top)]">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+      <a href="#" data-mode="show" class="text-white font-black tracking-[0.3em] text-sm">LOTICI</a>
+      <nav role="tablist" aria-label="Modo" class="relative flex p-1 rounded-full bg-white/5 border border-white/10 w-[280px] max-w-[60vw]">
+        <span class="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full transition-all duration-300 ${b2b ? "left-[calc(50%+0px)] bg-amber-400" : "left-1 bg-emerald-400"}"></span>
+        ${tab("show", "Público")}${tab("b2b", "Contratantes")}
       </nav>
+      <a href="${C.INSTAGRAM_URL}" target="_blank" rel="noopener" class="tap inline-flex items-center justify-center text-gray-400 hover:text-white" aria-label="Instagram ${C.INSTAGRAM_HANDLE}"><i data-lucide="instagram" class="w-5 h-5"></i></a>
     </div>
   </header>`;
 }
 
 function footer() {
-  return `<footer class="max-w-3xl mx-auto px-4 pb-24 pt-8 text-center text-xs text-gray-500">
-    © ${new Date().getFullYear()} Marlon Lotici · Florianópolis
-    <button data-act="stage-open" class="tap ml-2 opacity-30 hover:opacity-100" aria-label="Stage view"><i data-lucide="lock" class="w-3 h-3 inline"></i></button>
+  return `<footer class="max-w-5xl mx-auto px-4 pb-28 pt-12 text-center text-xs text-gray-600">
+    © ${new Date().getFullYear()} Marlon Lotici · Florianópolis · ${C.INSTAGRAM_HANDLE}
+    <button data-act="stage-open" class="tap ml-1 opacity-20 hover:opacity-80" aria-label="Stage view"><i data-lucide="lock" class="w-3 h-3 inline"></i></button>
   </footer>`;
 }
 
-/* ---------- MODO 1 ---------- */
-function explainer() {
-  const item = (e, t) => `<div class="flex-1 text-center"><div class="text-2xl">${e}</div><div class="text-[11px] leading-tight mt-1 text-gray-300">${t}</div></div>`;
-  return `<section class="glass rounded-2xl p-4">
-    <h2 class="text-sm font-bold text-amber mb-3">O que é Live Loop?</h2>
-    <div class="flex gap-2">${item("🥁", "Beatbox na Voz")}${item("🎸", "Baixo & Violão Ao Vivo")}${item("🔁", "Loop Station RC-50<br><b>100% Sem Playback!</b>")}</div>
+/* ---------- MODO 1: Jukebox ---------- */
+function showHero() {
+  const chip = (icon, t) => `<div class="card flex items-center gap-2 px-3 py-2 text-xs text-gray-300 shrink-0"><i data-lucide="${icon}" class="w-4 h-4 text-emerald-400"></i>${t}</div>`;
+  return `<section class="pt-8 pb-2 rise">
+    <span class="inline-flex items-center gap-2 text-[11px] font-semibold tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-full px-3 py-1"><span class="live-dot w-1.5 h-1.5 rounded-full bg-emerald-400"></span>LIVE LOOP EXPERIENCE · AO VIVO</span>
+    <h1 class="mt-4 text-4xl sm:text-5xl font-extrabold text-white">Vote no próximo<br>bloco do show.</h1>
+    <p class="mt-3 text-gray-400 max-w-md">O impacto de uma banda completa. A versatilidade de um artista solo. O mais votado vai pro palco.</p>
+    <div class="mt-5 flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+      ${chip("mic-2", "Beatbox na voz")}${chip("guitar", "Baixo & violão ao vivo")}${chip("repeat", "Loop Station RC-50 · sem playback")}
+    </div>
   </section>`;
 }
 
-function blockCard(b) {
+function blockCard(b, i) {
   const v = state.votes[b.id] || 0;
   const mine = myVotes()[b.id] || 0;
-  const q = norm(state.query);
-  return `<article class="glass rounded-2xl p-4" data-block="${b.id}">
-    <div class="flex justify-between items-start gap-2">
-      <div>
-        <div class="text-[11px] text-teal font-bold">BLOCO ${b.id}</div>
-        <h3 class="font-bold leading-tight">${esc(b.name)}</h3>
-        <div class="text-xs text-gray-400">${esc(b.bpm)} BPM</div>
+  const q = norm(state.query.trim());
+  const top = Math.max(0, ...Object.values(state.votes));
+  const leading = v > 0 && v === top;
+  return `<article class="card glow-emerald relative overflow-hidden p-5 rise" ${delay(i)} data-block="${b.id}">
+    <span class="ghost">${String(b.id).padStart(2, "0")}</span>
+    <div class="relative">
+      <div class="flex items-center gap-2 text-[11px] font-semibold tracking-wider text-gray-500">BLOCO ${String(b.id).padStart(2, "0")} · ${esc(b.bpm)} BPM ${leading ? '<span class="text-emerald-400">· 🔥 EM ALTA</span>' : ""}</div>
+      <h3 class="mt-1 text-lg font-bold text-white leading-snug pr-16">${esc(b.name)}</h3>
+      <ul class="mt-4 space-y-1.5">
+        ${b.songs.map((s) => {
+          const hit = q && norm(`${s.title} ${s.artist}`).includes(q);
+          return `<li class="text-xs truncate ${hit ? "text-emerald-300" : "text-gray-500"}"><span class="${hit ? "text-emerald-200" : "text-gray-300"}">${esc(s.title)}</span> · ${esc(s.artist)}${s.calm ? " · 🌙" : ""}</li>`;
+        }).join("")}
+      </ul>
+      <div class="mt-5 flex items-center justify-between">
+        <div class="text-sm"><span class="text-white font-bold tabular-nums">${v}</span> <span class="text-gray-500">voto${v === 1 ? "" : "s"}${mine ? ` · você ${mine}` : ""}</span></div>
+        <button data-act="vote" data-id="${b.id}" aria-label="Votar no bloco ${b.id}" class="tap w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center shadow-lg shadow-emerald-500/20"><i data-lucide="play" class="w-5 h-5 fill-current"></i></button>
       </div>
-      <div class="text-right"><div class="text-2xl font-extrabold text-amber" data-count>${v}</div><div class="text-[10px] text-gray-400">votos</div></div>
     </div>
-    <ol class="mt-3 space-y-1.5 text-sm">
-      ${b.songs.map((s, i) => {
-        const hit = q && norm(`${s.title} ${s.artist}`).includes(q);
-        return `<li class="flex gap-2 ${hit ? "bg-amber/20 rounded-md px-1 -mx-1" : ""}">
-          <span class="text-gray-500 w-4">${i + 1}.</span>
-          <span><b>${esc(s.title)}</b> <span class="text-gray-400">— ${esc(s.artist)}</span> ${s.calm ? '<span class="text-[10px] text-teal ml-1">🌙 tranquila</span>' : '<span class="text-[10px] text-amber ml-1">⚡</span>'}</span>
-        </li>`;
-      }).join("")}
-    </ol>
-    <button data-act="vote" data-id="${b.id}" class="tap mt-3 w-full rounded-xl bg-gradient-to-r from-amber to-orange-500 text-black font-bold">🔥 Votar neste Bloco${mine ? ` <span class="text-xs font-normal">(você: ${mine})</span>` : ""}</button>
   </article>`;
 }
 
 function blocksList() {
   const q = norm(state.query.trim());
-  let out = "";
+  let out = "", n = 0;
   for (const phase of [1, 2, 3]) {
-    const blocks = BLOCKS.filter((b) => b.phase === phase && (!q || b.songs.some((s) => norm(`${s.title} ${s.artist}`).includes(q) || norm(b.name).includes(q))));
+    const blocks = BLOCKS.filter((b) => b.phase === phase && (!q || b.songs.some((s) => norm(`${s.title} ${s.artist}`).includes(q)) || norm(b.name).includes(q)));
     if (!blocks.length) continue;
-    out += `<h2 class="text-sm font-bold text-teal mt-6 mb-2 px-1">${PHASES[phase]}</h2><div class="space-y-3">${blocks.map(blockCard).join("")}</div>`;
+    out += `<h2 class="mt-10 mb-4 text-xs font-semibold tracking-widest uppercase text-gray-500">${PHASES[phase]}</h2>
+      <div class="grid gap-3 sm:grid-cols-2">${blocks.map((b) => blockCard(b, n++)).join("")}</div>`;
   }
-  return out || `<p class="text-center text-gray-400 py-10">Nenhuma música encontrada 🎵 <br><span class="text-xs">Peça no botão "Destacar Pedido"!</span></p>`;
+  return out || `<p class="text-center text-gray-500 py-16">Nada encontrado 🎵<br><span class="text-xs">Peça no botão "Destacar pedido".</span></p>`;
 }
 
 function showView() {
-  return `<main class="view max-w-3xl mx-auto px-4 py-4 space-y-4">
-    ${explainer()}
-    <button data-act="modal" class="tap w-full rounded-2xl bg-gradient-to-r from-teal to-emerald-600 text-black font-bold py-3 shadow-lg shadow-emerald-500/20">🎶 Destacar Pedido + Caixinha Pix</button>
-    <div class="relative"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-      <input id="search" type="search" value="${esc(state.query)}" placeholder="Buscar música ou artista…" class="w-full min-h-[44px] pl-9 pr-3 rounded-xl glass placeholder-gray-500 outline-none focus:border-amber"></div>
+  return `<main class="max-w-5xl mx-auto px-4">
+    ${showHero()}
+    <div class="relative mt-6"><i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+      <input id="search" type="search" value="${esc(state.query)}" placeholder="Buscar música ou artista" class="w-full min-h-[48px] pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/10 text-white placeholder-gray-500 outline-none focus:border-white/30 transition-colors"></div>
     <div id="blocks">${blocksList()}</div>
   </main>
-  <button data-act="modal" class="tap fixed bottom-4 right-4 z-30 rounded-full bg-teal text-black font-bold px-4 shadow-xl pb-[env(safe-area-inset-bottom)]" aria-label="Pedir música">🎶 Pedir / Pix</button>`;
+  <button data-act="modal" aria-label="Destacar pedido com Pix" class="tap fixed z-30 right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] h-14 pl-4 pr-5 rounded-full bg-emerald-500 text-black font-bold text-sm flex items-center gap-2 shadow-2xl shadow-emerald-500/30">
+    <span class="absolute inset-0 rounded-full bg-emerald-400 ping-ring -z-10"></span>
+    <i data-lucide="sparkles" class="w-5 h-5"></i>Destacar pedido · Pix
+  </button>`;
 }
 
 /* ---------- Modal de pedido ---------- */
@@ -108,18 +111,18 @@ function openModal() {
   const opts = BLOCKS.map((b) => `<optgroup label="Bloco ${b.id} — ${esc(b.name)}">${b.songs.map((s) => `<option>${esc(s.title)} — ${esc(s.artist)}</option>`).join("")}</optgroup>`).join("");
   const el = document.createElement("div");
   el.id = "modal";
-  el.className = "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm";
-  el.innerHTML = `<div class="view w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-[#111827] border border-white/10 p-5 space-y-3">
-    <div class="flex justify-between items-center"><h2 class="font-bold text-lg">🎶 Pedido + Caixinha Pix</h2><button data-act="close" class="tap" aria-label="Fechar"><i data-lucide="x"></i></button></div>
-    <input id="m-name" placeholder="Seu nome / Mesa" class="w-full min-h-[44px] px-3 rounded-xl glass outline-none">
-    <select id="m-song" class="w-full min-h-[44px] px-3 rounded-xl bg-[#1f2937] border border-white/10"><option value="">Música ou bloco desejado…</option>${opts}</select>
-    <input id="m-song-free" placeholder="…ou digite outra música" class="w-full min-h-[44px] px-3 rounded-xl glass outline-none">
-    <textarea id="m-msg" rows="2" placeholder='Recado (ex: "Parabéns pra mesa 4!")' class="w-full px-3 py-2 rounded-xl glass outline-none"></textarea>
-    <div><div class="text-xs text-gray-400 mb-1">Valor de apoio</div>
-      <div class="flex gap-2" id="m-vals">${C.PIX_SUGGESTED.map((v) => `<button data-val="${v}" class="tap flex-1 rounded-xl glass font-semibold">R$ ${v}</button>`).join("")}<input id="m-val-free" inputmode="numeric" placeholder="Livre" class="w-20 min-h-[44px] text-center rounded-xl glass outline-none"></div></div>
-    <button data-act="copy-pix" class="tap w-full rounded-xl border border-amber text-amber font-semibold">📋 Copiar Chave Pix</button>
-    <div class="text-[11px] text-gray-500 text-center">Pix: ${esc(C.PIX_NAME)}</div>
-    <button data-act="send-wa" class="tap w-full rounded-xl bg-teal text-black font-bold">Enviar Pedido direto pro WhatsApp do Palco</button>
+  el.className = "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-md";
+  el.innerHTML = `<div class="rise w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl bg-[#0F0F0F] border border-white/10 p-6 space-y-4">
+    <div class="flex justify-between items-center"><h2 class="text-xl font-bold text-white">Destacar pedido</h2><button data-act="close" class="tap flex items-center justify-center text-gray-400 hover:text-white" aria-label="Fechar"><i data-lucide="x"></i></button></div>
+    <input id="m-name" placeholder="Seu nome / Mesa" class="field">
+    <select id="m-song" class="field text-gray-300"><option value="">Música ou bloco desejado</option>${opts}</select>
+    <input id="m-song-free" placeholder="…ou digite outra música" class="field">
+    <textarea id="m-msg" rows="2" placeholder='Recado (ex: "Parabéns pra mesa 4!")' class="field resize-none"></textarea>
+    <div><div class="text-xs text-gray-500 mb-2">Valor de apoio</div>
+      <div class="flex gap-2" id="m-vals">${C.PIX_SUGGESTED.map((v) => `<button data-val="${v}" class="tap flex-1 rounded-full border border-white/10 text-white font-semibold hover:border-white/30">R$ ${v}</button>`).join("")}<input id="m-val-free" inputmode="numeric" placeholder="Livre" class="w-20 min-h-[44px] text-center rounded-full bg-transparent border border-white/10 text-white outline-none focus:border-white/30"></div></div>
+    <button data-act="copy-pix" class="tap w-full rounded-full border border-white/15 text-white font-semibold flex items-center justify-center gap-2 hover:border-white/30"><i data-lucide="copy" class="w-4 h-4"></i>Copiar chave Pix</button>
+    <div class="text-[11px] text-gray-600 text-center -mt-2">Pix · ${esc(C.PIX_NAME)}</div>
+    <button data-act="send-wa" class="tap w-full rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i>Enviar pro WhatsApp do palco</button>
   </div>`;
   document.body.appendChild(el);
   icons();
@@ -137,37 +140,72 @@ function sendWhatsApp() {
 
 function toast(msg) {
   const t = document.createElement("div");
-  t.className = "fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] glass bg-black/80 px-4 py-2 rounded-full text-sm";
+  t.className = "rise fixed bottom-24 left-1/2 -translate-x-1/2 z-[60] bg-white text-black font-medium px-4 py-2 rounded-full text-sm shadow-xl";
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2200);
 }
 
-/* ---------- MODO 2 ---------- */
+/* ---------- MODO 2: B2B ---------- */
 function b2bView() {
-  const fmt = (icon, title, text, tags) => `<article class="glass rounded-2xl p-5"><div class="text-3xl">${icon}</div><h3 class="font-bold text-lg mt-2">${title}</h3><p class="text-sm text-gray-300 mt-1">${text}</p><div class="flex flex-wrap gap-1.5 mt-3">${tags.map((t) => `<span class="text-[11px] px-2 py-0.5 rounded-full bg-teal/15 text-teal">${t}</span>`).join("")}</div></article>`;
-  const video = (v) => `<div class="shrink-0 w-44 snap-center"><div class="aspect-[9/16] rounded-2xl overflow-hidden glass flex items-center justify-center">${v.embed ? `<iframe src="${esc(v.embed)}" class="w-full h-full" loading="lazy" allowfullscreen title="${esc(v.title)}"></iframe>` : '<i data-lucide="play-circle" class="w-10 h-10 text-gray-500"></i>'}</div><div class="text-xs text-center mt-1 text-gray-400">${v.title}</div></div>`;
-  return `<main class="view max-w-3xl mx-auto px-4 py-6 space-y-8">
-    <section class="text-center space-y-3">
-      <h2 class="text-3xl font-extrabold leading-tight">A Energia de uma <span class="text-amber">Banda Completa</span> no Espaço e Custo de um Artista Solo.</h2>
-      <p class="text-gray-300">Bateria em beatbox, contrabaixo no violão, harmonias vocais e solos construídos 100% ao vivo na Boss RC-50. Do som elegante de recepção à pista de dança cheia.</p>
-      <a href="#orcamento" class="tap inline-flex items-center px-6 rounded-full bg-amber text-black font-bold">Solicitar Proposta</a>
+  const stat = (n, l) => `<div class="card p-6 flex flex-col justify-end"><div class="text-4xl font-extrabold text-white tracking-tight">${n}</div><div class="text-xs mt-1 text-gray-500">${l}</div></div>`;
+  const video = (v) => `<div class="shrink-0 w-48 snap-center"><div class="aspect-[9/16] rounded-2xl overflow-hidden card flex items-center justify-center">${v.embed ? `<iframe src="${esc(v.embed)}" class="w-full h-full" loading="lazy" allowfullscreen title="${esc(v.title)}"></iframe>` : '<i data-lucide="play-circle" class="w-10 h-10 text-gray-700"></i>'}</div><div class="text-xs text-center mt-2 text-gray-500">${esc(v.title)}</div></div>`;
+  const tag = (t) => `<span class="text-[11px] px-2.5 py-1 rounded-full border border-white/10 text-gray-400">${t}</span>`;
+  return `<main>
+    <section class="relative min-h-[calc(100vh-4rem)] flex items-end overflow-hidden">
+      ${C.HERO_VIDEO ? `<video class="absolute inset-0 w-full h-full object-cover opacity-50" src="${esc(C.HERO_VIDEO)}" autoplay loop muted playsinline></video>` : `<div class="absolute inset-0 bg-[radial-gradient(60%_50%_at_70%_20%,rgba(251,191,36,.12),transparent),radial-gradient(50%_40%_at_10%_60%,rgba(255,255,255,.05),transparent)]"></div>`}
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+      <div class="relative max-w-5xl mx-auto px-4 pb-16 pt-24 w-full">
+        <span class="rise inline-flex items-center gap-2 text-[11px] font-semibold tracking-widest text-amber-400 border border-amber-400/20 bg-amber-400/5 rounded-full px-3 py-1">LIVE LOOP EXPERIENCE · FLORIANÓPOLIS</span>
+        <h1 class="rise mt-6 text-5xl md:text-7xl font-extrabold tracking-tighter text-white leading-[1.02]" ${delay(1)}>A pressão de uma banda.<br><span class="text-gray-500">A logística de um artista solo.</span></h1>
+        <p class="rise mt-6 max-w-xl text-lg text-gray-400" ${delay(2)}>Bateria em beatbox, contrabaixo no violão, harmonias vocais e solos construídos 100% ao vivo na Boss RC-50. Do som elegante de recepção à pista de dança cheia.</p>
+        <div class="rise mt-8 flex flex-wrap gap-3" ${delay(3)}>
+          <a href="#orcamento" class="tap inline-flex items-center gap-2 px-6 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-bold">Solicitar proposta <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+          <a href="#formatos" class="tap inline-flex items-center px-6 rounded-full border border-white/15 text-white hover:border-white/30">Ver formatos</a>
+        </div>
+      </div>
     </section>
-    <section><div class="flex gap-3 overflow-x-auto snap-x pb-2">${C.VIDEOS.map(video).join("")}</div></section>
-    <section class="space-y-3"><h2 class="text-xl font-bold">3 formatos de evento</h2>
-      ${fmt("💼", "Corporate & Tech Happy Hour", "Ideal para empresas, confraternizações e eventos em Florianópolis. Montagem em 20 min, som JBL EON 712 próprio incluso.", ["Montagem 20 min", "JBL EON 712 incluso", "Florianópolis"])}
-      ${fmt("🌅", "Sunset, Casamentos & Private Parties", "Recepção acústica sofisticada na 1ª hora, evoluindo para balada Pop/Disco/Carnaval.", ["Recepção acústica", "Pop / Disco / Carnaval"])}
-      ${fmt("🍻", "Gastrobares & Cervejarias Premium", "Show de 3 horas com dinâmica planejada em blocos para aumentar a permanência e o consumo.", ["3 horas", "Show em blocos"])}
+
+    <section class="max-w-5xl mx-auto px-4 py-16">
+      <div class="flex gap-4 overflow-x-auto snap-x no-scrollbar md:justify-center">${C.VIDEOS.map(video).join("")}</div>
     </section>
-    <section id="orcamento" class="glass rounded-2xl p-5 space-y-3 scroll-mt-40">
-      <h2 class="text-xl font-bold">Solicite disponibilidade e proposta</h2>
-      <select id="q-type" class="w-full min-h-[44px] px-3 rounded-xl bg-[#1f2937] border border-white/10"><option>Casamento</option><option>Corporativo</option><option>Aniversário</option><option>Bar/Pub</option></select>
-      <input id="q-date" type="date" class="w-full min-h-[44px] px-3 rounded-xl bg-[#1f2937] border border-white/10">
-      <input id="q-place" list="places" placeholder="Local / Bairro (ex: Lagoa, Jurerê)" class="w-full min-h-[44px] px-3 rounded-xl glass outline-none">
-      <datalist id="places"><option>Florianópolis Centro</option><option>Lagoa da Conceição</option><option>Santa Mônica</option><option>Jurerê</option><option>Campeche</option><option>Itacorubi</option></datalist>
-      <select id="q-dur" class="w-full min-h-[44px] px-3 rounded-xl bg-[#1f2937] border border-white/10"><option>2h</option><option>3h</option></select>
-      <input id="q-name" placeholder="Seu nome / Empresa" class="w-full min-h-[44px] px-3 rounded-xl glass outline-none">
-      <button data-act="send-quote" class="tap w-full rounded-xl bg-amber text-black font-bold">Solicitar Disponibilidade e Proposta</button>
+
+    <section id="formatos" class="max-w-5xl mx-auto px-4 pb-20 scroll-mt-24">
+      <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Três formatos.<br><span class="text-gray-500">Uma assinatura.</span></h2>
+      <div class="mt-10 grid gap-3 md:grid-cols-6">
+        <article class="card glow-amber p-8 md:col-span-4 md:row-span-2 flex flex-col justify-between min-h-[320px]">
+          <div><i data-lucide="building-2" class="w-7 h-7 text-amber-400"></i>
+            <h3 class="mt-6 text-2xl font-bold text-white">Corporate & Tech Happy Hour</h3>
+            <p class="mt-3 text-gray-400 max-w-md">Ideal para empresas, confraternizações e eventos em Florianópolis. Montagem em 20 minutos, som JBL EON 712 próprio incluso.</p></div>
+          <div class="mt-8 flex flex-wrap gap-2">${tag("Montagem 20 min")}${tag("JBL EON 712 incluso")}${tag("Florianópolis")}</div>
+        </article>
+        ${stat("20 min", "para montar e soar")}
+        ${stat("100%", "ao vivo, zero playback")}
+        <article class="card glow-amber p-8 md:col-span-3 min-h-[240px] flex flex-col justify-between">
+          <div><i data-lucide="sunset" class="w-7 h-7 text-amber-400"></i>
+            <h3 class="mt-5 text-xl font-bold text-white">Sunset, Casamentos & Private Parties</h3>
+            <p class="mt-2 text-sm text-gray-400">Recepção acústica sofisticada na 1ª hora, evoluindo para balada Pop/Disco/Carnaval.</p></div>
+        </article>
+        <article class="card glow-amber p-8 md:col-span-3 min-h-[240px] flex flex-col justify-between">
+          <div><i data-lucide="beer" class="w-7 h-7 text-amber-400"></i>
+            <h3 class="mt-5 text-xl font-bold text-white">Gastrobares & Cervejarias Premium</h3>
+            <p class="mt-2 text-sm text-gray-400">Show de 3 horas com dinâmica planejada em blocos para aumentar a permanência e o consumo.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="orcamento" class="max-w-xl mx-auto px-4 pb-24 scroll-mt-24">
+      <h2 class="text-3xl font-extrabold text-white tracking-tight">Vamos conversar<span class="text-amber-400">.</span></h2>
+      <p class="mt-2 text-gray-400">Informe os detalhes e receba disponibilidade e proposta no WhatsApp.</p>
+      <div class="mt-8 space-y-5">
+        <input id="q-name" placeholder="Seu nome / Empresa" class="field">
+        <select id="q-type" class="field"><option>Casamento</option><option>Corporativo</option><option>Aniversário</option><option>Bar/Pub</option></select>
+        <input id="q-date" type="date" class="field text-gray-300" style="color-scheme:dark">
+        <input id="q-place" list="places" placeholder="Local / Bairro (ex: Lagoa, Jurerê)" class="field">
+        <datalist id="places"><option>Florianópolis Centro</option><option>Lagoa da Conceição</option><option>Santa Mônica</option><option>Jurerê</option><option>Campeche</option><option>Itacorubi</option></datalist>
+        <select id="q-dur" class="field"><option>2h</option><option>3h</option></select>
+        <button data-act="send-quote" class="tap w-full mt-4 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-bold flex items-center justify-center gap-2">Solicitar disponibilidade e proposta <i data-lucide="arrow-up-right" class="w-4 h-4"></i></button>
+      </div>
     </section>
   </main>`;
 }
@@ -180,55 +218,54 @@ function sendQuote() {
 }
 
 /* ---------- MODO 3: Stage ---------- */
-const fmtTime = (ms) => { const s = Math.floor(ms / 1000); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+const YELLOW = "text-[#FBBF24]";
+const fmtTime = (ms) => { const s = Math.floor(Math.max(0, ms) / 1000); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
 
 function stageTimerHtml() {
   const t = state.timer, remaining = t.target * 60000 - t.elapsed;
-  return `<span id="t-elapsed">${fmtTime(t.elapsed)}</span> <span class="text-gray-500 text-sm">/ ${t.target}min · restam <span id="t-left" class="${remaining < 300000 ? "text-red-400" : ""}">${remaining < 0 ? "-" : ""}${fmtTime(Math.abs(remaining))}</span></span>`;
+  return `${fmtTime(t.elapsed)} <span class="text-gray-600 text-base font-semibold">/ ${t.target}min · restam <span class="${remaining < 300000 ? "text-red-500" : "text-gray-400"}">${remaining < 0 ? "-" : ""}${fmtTime(Math.abs(remaining))}</span></span>`;
 }
 
-function badges(s) {
-  return s.tags.map((t) => `<span class="inline-block px-2 py-1 rounded-md bg-amber text-black font-extrabold text-sm">[${TAG_BADGES[t]}]</span>`).join(" ");
-}
+const badges = (s) => s.tags.map((t) => `<span class="inline-block px-3 py-1.5 rounded-lg bg-[#FBBF24] text-black font-extrabold text-base">[${TAG_BADGES[t]}]</span>`).join(" ");
+const patchLabel = (b) => (b.patch === 2 ? "PATCH 02 · ONE-SHOT" : "PATCH 01 · LOOP SYNC ON");
 
 function stageView() {
   const b = BLOCKS.find((x) => x.id === state.stageBlock);
-  const patch = b.patch === 2 ? "PATCH 02 · ONE-SHOT" : "PATCH 01 · LOOP SYNC ON";
-  const pills = BLOCKS.map((x) => `<button data-sblock="${x.id}" class="tap shrink-0 w-11 rounded-lg font-extrabold ${x.id === b.id ? "bg-amber text-black" : "bg-gray-900 text-gray-300 border border-gray-700"}">${x.id}</button>`).join("");
+  const pills = BLOCKS.map((x) => `<button data-sblock="${x.id}" class="tap shrink-0 w-12 rounded-xl font-black text-lg ${x.id === b.id ? "bg-[#FBBF24] text-black" : "bg-[#111] text-gray-400 border border-white/10"}">${x.id}</button>`).join("");
   const list = b.songs.map((s, i) => `
-    <button data-song="${i}" class="block w-full text-left rounded-2xl border ${s.calm ? "border-teal/60" : "border-gray-700"} bg-gray-950 p-4 active:bg-gray-900">
-      <div class="flex justify-between items-baseline gap-2"><span class="text-2xl font-extrabold">${i + 1}. ${esc(s.title)}</span><span class="text-gray-400 text-sm shrink-0">${esc(s.bpm || b.bpm)} BPM</span></div>
-      <div class="text-gray-400">${esc(s.artist)}</div>
-      <div class="text-3xl font-black text-yellow-300 mt-2 leading-snug">${esc(s.chords)}</div>
-      <div class="mt-2 text-sm text-gray-300">${esc(s.notes)}</div>
-      <div class="mt-2 flex flex-wrap gap-1.5">${badges(s)}</div>
+    <button data-song="${i}" class="block w-full text-left rounded-2xl border ${s.calm ? "border-emerald-500/50" : "border-white/15"} bg-[#0A0A0A] p-5 active:bg-[#151515]">
+      <div class="flex justify-between items-baseline gap-3"><span class="text-3xl font-black text-white leading-tight">${i + 1}. ${esc(s.title)}</span><span class="${YELLOW} text-2xl font-black shrink-0">${esc(s.bpm || b.bpm)}<span class="text-sm"> BPM</span></span></div>
+      <div class="text-gray-500 text-lg">${esc(s.artist)}</div>
+      <div class="text-4xl font-black ${YELLOW} mt-3 leading-snug">${esc(s.chords)}</div>
+      <div class="mt-3 text-lg text-gray-300">${esc(s.notes)}</div>
+      <div class="mt-3 flex flex-wrap gap-2">${badges(s)}</div>
     </button>`).join("");
-  return `<div class="stage fixed inset-0 z-50 overflow-y-auto text-white p-3 pb-10">
-    <div class="flex items-center justify-between gap-2 sticky top-0 bg-black pb-2 z-10">
+  return `<div class="fixed inset-0 z-50 overflow-y-auto bg-black text-white p-3 pb-12">
+    <div class="flex items-center justify-between gap-2 sticky top-0 bg-black py-2 z-10">
       <div class="text-4xl font-black tabular-nums" id="timer">${stageTimerHtml()}</div>
       <div class="flex gap-1.5">
-        <button data-act="t-toggle" class="tap px-4 rounded-lg bg-teal text-black font-bold" id="t-toggle">${state.timer.running ? "Pausar" : "Start"}</button>
-        <button data-act="t-reset" class="tap px-3 rounded-lg bg-gray-800 font-bold">Reset</button>
-        <button data-act="t-target" class="tap px-3 rounded-lg bg-gray-800 font-bold">${state.timer.target === 60 ? "1h" : "1h30"}</button>
-        <button data-act="stage-exit" class="tap px-3 rounded-lg bg-red-900 font-bold" aria-label="Sair">✕</button>
+        <button data-act="t-toggle" class="tap px-4 rounded-xl bg-emerald-500 text-black font-bold">${state.timer.running ? "Pausar" : "Start"}</button>
+        <button data-act="t-reset" class="tap px-3 rounded-xl bg-[#1a1a1a] font-bold">Reset</button>
+        <button data-act="t-target" class="tap px-3 rounded-xl bg-[#1a1a1a] font-bold">${state.timer.target === 60 ? "1h" : "1h30"}</button>
+        <button data-act="stage-exit" class="tap px-3 rounded-xl bg-red-900 font-bold" aria-label="Sair">✕</button>
       </div>
     </div>
-    <div class="flex gap-1.5 overflow-x-auto pb-2">${pills}</div>
-    <div class="my-2"><div class="text-xl font-extrabold text-yellow-300">BLOCO ${b.id} · ${esc(b.name)}</div>
-      <div class="text-gray-300">${esc(b.bpm)} BPM · <b class="${b.patch === 2 ? "text-red-400" : "text-teal"}">${patch}</b> · ${PHASES[b.phase].split(":")[0]}</div></div>
+    <div class="flex gap-1.5 overflow-x-auto no-scrollbar pb-2">${pills}</div>
+    <div class="my-3"><div class="text-2xl font-black ${YELLOW}">BLOCO ${b.id} · ${esc(b.name)}</div>
+      <div class="text-xl text-gray-300 mt-1">${esc(b.bpm)} BPM · <b class="${b.patch === 2 ? "text-red-500" : "text-emerald-400"}">${patchLabel(b)}</b></div></div>
     <div class="space-y-3">${list}</div>
     ${state.stageSong !== null ? stageFull(b, b.songs[state.stageSong]) : ""}
   </div>`;
 }
 
 function stageFull(b, s) {
-  return `<div class="fixed inset-0 z-[60] bg-black p-5 flex flex-col justify-between overflow-y-auto" data-act="song-close">
-    <div><div class="text-gray-400 text-lg">Bloco ${b.id} · ${esc(s.bpm || b.bpm)} BPM · ${b.patch === 2 ? "PATCH 02 ONE-SHOT" : "PATCH 01 LOOP SYNC ON"}</div>
-      <div class="text-4xl font-black mt-2">${esc(s.title)}</div><div class="text-xl text-gray-400">${esc(s.artist)}</div>
-      <div class="text-5xl font-black text-yellow-300 mt-6 leading-tight">${esc(s.chords)}</div>
-      <div class="mt-6 space-y-2 text-xl">${s.notes.split(" | ").map((n) => `<div>• ${esc(n)}</div>`).join("")}</div>
-      <div class="mt-6 flex flex-wrap gap-2 text-lg">${badges(s)}</div></div>
-    <div class="text-center text-gray-600 mt-6 py-3">toque para voltar</div></div>`;
+  return `<div class="fixed inset-0 z-[60] bg-black p-6 flex flex-col justify-between overflow-y-auto" data-act="song-close">
+    <div><div class="text-gray-400 text-xl">Bloco ${b.id} · <span class="${YELLOW} font-black">${esc(s.bpm || b.bpm)} BPM</span> · <b class="${b.patch === 2 ? "text-red-500" : "text-emerald-400"}">${patchLabel(b)}</b></div>
+      <div class="text-5xl font-black mt-3 text-white leading-tight">${esc(s.title)}</div><div class="text-2xl text-gray-500">${esc(s.artist)}</div>
+      <div class="text-6xl font-black ${YELLOW} mt-8 leading-tight">${esc(s.chords)}</div>
+      <div class="mt-8 space-y-3 text-2xl text-gray-200">${s.notes.split(" | ").map((n) => `<div>• ${esc(n)}</div>`).join("")}</div>
+      <div class="mt-8 flex flex-wrap gap-3 text-xl">${badges(s)}</div></div>
+    <div class="text-center text-gray-700 mt-8 py-3">toque para voltar</div></div>`;
 }
 
 /* ---------- Timer ---------- */
@@ -271,19 +308,20 @@ function openStage() {
 document.addEventListener("click", async (e) => {
   const t = e.target.closest("[data-mode],[data-act],[data-sblock],[data-song],[data-val]");
   if (!t) return;
-  if (t.dataset.mode) return setMode(t.dataset.mode);
+  if (t.dataset.mode) { e.preventDefault(); return setMode(t.dataset.mode); }
   if (t.dataset.sblock) { state.stageBlock = +t.dataset.sblock; state.stageSong = null; return render(); }
   if (t.dataset.song !== undefined) { state.stageSong = +t.dataset.song; return render(); }
   if (t.dataset.val) {
-    $("#m-vals").querySelectorAll("button").forEach((b) => b.classList.remove("sel", "bg-amber", "text-black"));
-    t.classList.add("sel", "bg-amber", "text-black"); $("#m-val-free").value = ""; return;
+    $("#m-vals").querySelectorAll("button").forEach((b) => b.classList.remove("sel", "bg-emerald-500", "text-black"));
+    t.classList.add("sel", "bg-emerald-500", "text-black"); $("#m-val-free").value = ""; return;
   }
   switch (t.dataset.act) {
     case "vote": {
-      const votes = await vote(+t.dataset.id);
-      state.votes = votes; $("#blocks").innerHTML = blocksList(); icons();
+      document.body.classList.add("settled");
+      state.votes = await vote(+t.dataset.id);
+      $("#blocks").innerHTML = blocksList(); icons();
       if (navigator.vibrate) navigator.vibrate(30);
-      toast("Voto registrado! 🔥"); break;
+      toast("Voto registrado 🔥"); break;
     }
     case "modal": openModal(); break;
     case "close": closeModal(); break;
@@ -303,8 +341,8 @@ document.addEventListener("click", async (e) => {
 });
 
 document.addEventListener("input", (e) => {
-  if (e.target.id === "search") { state.query = e.target.value; $("#blocks").innerHTML = blocksList(); icons(); }
-  if (e.target.id === "m-val-free") $("#m-vals")?.querySelectorAll("button").forEach((b) => b.classList.remove("sel", "bg-amber", "text-black"));
+  if (e.target.id === "search") { document.body.classList.add("settled"); state.query = e.target.value; $("#blocks").innerHTML = blocksList(); icons(); }
+  if (e.target.id === "m-val-free") $("#m-vals")?.querySelectorAll("button").forEach((b) => b.classList.remove("sel", "bg-emerald-500", "text-black"));
 });
 
 window.addEventListener("hashchange", () => {
@@ -312,5 +350,5 @@ window.addEventListener("hashchange", () => {
 });
 
 subscribe((v) => { state.votes = v; if (state.mode === "show" && $("#blocks")) { $("#blocks").innerHTML = blocksList(); icons(); } });
-getVotes().then((v) => { state.votes = v; render(); });
+getVotes().then((v) => { state.votes = v; if (state.mode === "show" && !$("#modal")) render(); });
 render();

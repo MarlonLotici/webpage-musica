@@ -22,3 +22,6 @@ export const PIX_SUGGESTED = [10, 20, 50];
 
 // Troque por "supabase" quando ligar o Realtime (ver js/votesService.js)
 export const VOTES_BACKEND = "local";
+
+// Vídeo de fundo do hero B2B (mp4 vertical/horizontal curto, sem som). "" = fundo gradiente.
+export const HERO_VIDEO = "";
